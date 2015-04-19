@@ -12,14 +12,18 @@
 ## See the License for the specific language governing permissions and
 ## limitations under the License.
 
-import click
 import csv
 import json
 
+import click
 from pyelasticsearch import ElasticSearch
 from pyelasticsearch import bulk_chunks
+from pyelasticsearch import ElasticHttpNotFoundError
+from pyelasticsearch import IndexAlreadyExistsError
 
-__version__ = '1.0.0.dev1'
+
+__version__ = '1.0.0.dev2'
+
 
 def echo(message, quiet):
     """Print the given message to standard out via click unless quiet is True."""
