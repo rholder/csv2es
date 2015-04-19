@@ -15,6 +15,7 @@
 import csv2es
 import unittest
 
+
 class TestDelimiter(unittest.TestCase):
 
     def test_sanitize(self):
