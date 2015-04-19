@@ -22,7 +22,7 @@ from pyelasticsearch import ElasticHttpNotFoundError
 from pyelasticsearch import IndexAlreadyExistsError
 
 
-__version__ = '1.0.0.dev2'
+__version__ = '1.0.0.dev3'
 
 
 def echo(message, quiet):
@@ -91,7 +91,7 @@ def sanitize_delimiter(delimiter, is_tab):
 @click.command()
 @click.option('--index-name', required=True,
               help='The name of the ES index to load data into')
-@click.option('--delete-index', default=False,
+@click.option('--delete-index', is_flag=True, required=False,
               help='Delete an existing ES index if it exists (use with caution...)')
 @click.option('--doc-type', required=True,
               help='The target document type, maybe like user_records')
@@ -111,6 +111,7 @@ def sanitize_delimiter(delimiter, is_tab):
               help='The bytes per chunk to upload to ES, defaults to 100000')
 @click.option('--quiet', is_flag=True, required=False,
               help='Minimize console output')
+@click.version_option(version=__version__, )
 def main(index_name, delete_index, mapping_file, doc_type, import_file,
          delimiter, tab, host, docs_per_chunk, bytes_per_chunk, quiet):
     """
