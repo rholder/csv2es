@@ -65,5 +65,6 @@ settings.update(
 )
 
 # run this to push to PyPI because you will forget how to do this later
-#   python setup.py sdist upload
+#   python setup.py sdist
+#   twine upload dist/*
 setup(**settings)
