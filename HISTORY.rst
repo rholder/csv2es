@@ -5,6 +5,7 @@ History
 
 1.0.0.dev2 (2015-04-19)
 +++++++++++++++++++++++
+- Switch over to Click for handling executable
 - Fix import errors
 - Fix --delete-index flag
 - Add --version option

@@ -59,7 +59,10 @@ settings.update(
     classifiers=classifiers,
     keywords='elasticsearch es pyelasticsearch csv tsv bulk import kibana',
     py_modules= ['csv2es'],
-    scripts=['scripts/csv2es'],
+    entry_points='''
+        [console_scripts]
+        csv2es=csv2es:cli
+    ''',
     test_suite='test_csv2es',
     install_requires=requirements,
 )

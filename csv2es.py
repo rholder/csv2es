@@ -112,8 +112,8 @@ def sanitize_delimiter(delimiter, is_tab):
 @click.option('--quiet', is_flag=True, required=False,
               help='Minimize console output')
 @click.version_option(version=__version__, )
-def main(index_name, delete_index, mapping_file, doc_type, import_file,
-         delimiter, tab, host, docs_per_chunk, bytes_per_chunk, quiet):
+def cli(index_name, delete_index, mapping_file, doc_type, import_file,
+        delimiter, tab, host, docs_per_chunk, bytes_per_chunk, quiet):
     """
     Bulk import a delimited file into a target Elasticsearch instance. Common
     delimited files include things like CSV and TSV.
@@ -159,4 +159,4 @@ def main(index_name, delete_index, mapping_file, doc_type, import_file,
 
 
 if __name__ == "__main__":
-    main()
+    cli()
