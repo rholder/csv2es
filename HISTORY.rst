@@ -2,6 +2,13 @@
 
 History
 -------
+
+1.0.0.dev2 (2015-04-19)
++++++++++++++++++++++++
+- Fix import errors
+- Fix --delete-index flag
+- Add --version option
+
 1.0.0.dev1 (2015-04-18)
 +++++++++++++++++++++++
 - Tinkering with documentation and PyPI updates
