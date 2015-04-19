@@ -88,7 +88,7 @@ Now let's load the data with a custom mapping file:
 
 .. code-block:: bash
 
-    csv2es --index-name potatoes --doc-type potato --mapping-file potatos.mapping.json --import-file potatoes.csv
+    csv2es --index-name potatoes --doc-type potato --mapping-file potatoes.mapping.json --import-file potatoes.csv
 
 What if my file is missing the header row, and it's super huge because there are
 so many potatoes in it, and everything is terrible? We can use sed to tack on a

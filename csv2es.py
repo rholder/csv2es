@@ -19,7 +19,7 @@ import json
 from pyelasticsearch import ElasticSearch
 from pyelasticsearch import bulk_chunks
 
-__version__ = '1.0.0.dev0'
+__version__ = '1.0.0.dev1'
 
 def echo(message, quiet):
     """Print the given message to standard out via click unless quiet is True."""
