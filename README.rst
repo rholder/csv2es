@@ -11,17 +11,17 @@ csv2es
 
 The csv2es project is an Apache 2.0 licensed commandline utility, written in
 Python, to load a CSV (or TSV) file into an Elasticsearch instance. That's
-pretty much it. That's all it does. The first row of your file should contain
-the field names you want to be used for your documents otherwise things will get
-weird. There's a little trick documented below to add a header row in case your
-file is missing it.
+pretty much it. That's all it does. The first row of the file should contain
+the field names intended to be used for Elasticsearch documents otherwise things
+will get weird. There's a little trick documented below to add a header row in
+case the file is missing it.
 
 Features
 --------
 
 - Minimal commandline interface
 - Load CSV's or TSV's
-- Customize your delimiter
+- Customize the delimiter to something else
 - Uses the Elasticsearch bulk API
 
 Installation
@@ -36,7 +36,7 @@ To install csv2es, simply:
 Examples
 ----------
 
-Let's say you've got a potatoes.csv file with a nice header that looks like this::
+Let's say we've got a potatoes.csv file with a nice header that looks like this::
 
  potato_id,potato_type,description
  33,sweet,"kinda oval"
@@ -62,15 +62,15 @@ Advanced Examples
 -----------------
 
 What if we have a super cool pipe-delimited file and want to wipe out the
-existing "pipes" index every time we load it up?
+existing "pipes" index every time we load it up? This ought to handle that case:
 
 .. code-block:: bash
 
     csv2es --index-name pipes --delete-index --doc-type pipe --import-file pipes.psv --delimiter '|'
 
-Elasticsearch is great, but it's doing something strange to my documents when I
-try to facet by certain fields. Let's override the default field mappings used
-in Elasticsearch with our own mapping file for potatoes.csv called
+Elasticsearch is great, but it's doing something strange to our documents when
+we try to facet by certain fields. Let's create our own custom mapping file to
+specify the fields used in Elasticsearch for that potatoes.csv called
 potatoes.mapping.json:
 
 .. code-block:: json
