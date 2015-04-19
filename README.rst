@@ -70,7 +70,7 @@ existing "pipes" index every time we load it up?
 
 Elasticsearch is great, but it's doing something strange to my documents when I
 try to facet by certain fields. Let's override the default field mappings used
-in Elasticsearch default with our own mapping file for potatoes.csv called
+in Elasticsearch with our own mapping file for potatoes.csv called
 potatoes.mapping.json:
 
 .. code-block:: json
