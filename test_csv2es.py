@@ -18,12 +18,12 @@ import unittest
 class TestDelimiter(unittest.TestCase):
 
     def test_sanitize(self):
-        self.assertEquals(None, csv2es.sanitize_delimiter(None, False))
-        self.assertEquals(str('\t'), csv2es.sanitize_delimiter(None, True))
-        self.assertEquals(str('|'), csv2es.sanitize_delimiter('|', False))
-        self.assertEquals(str('|'), csv2es.sanitize_delimiter(u'|', False))
-        self.assertEquals(str('\t'), csv2es.sanitize_delimiter('|', True))
-        self.assertEquals(str('\t'), csv2es.sanitize_delimiter('||', True))
+        self.assertEqual(None, csv2es.sanitize_delimiter(None, False))
+        self.assertEqual(str('\t'), csv2es.sanitize_delimiter(None, True))
+        self.assertEqual(str('|'), csv2es.sanitize_delimiter('|', False))
+        self.assertEqual(str('|'), csv2es.sanitize_delimiter(u'|', False))
+        self.assertEqual(str('\t'), csv2es.sanitize_delimiter('|', True))
+        self.assertEqual(str('\t'), csv2es.sanitize_delimiter('||', True))
         self.assertRaises(Exception, csv2es.sanitize_delimiter, '||', False)
 
 
