@@ -41,6 +41,7 @@ To install csv2es, simply:
 Usage
 -----
 ::
+
  Usage: csv2es [OPTIONS]
 
    Bulk import a delimited file into a target Elasticsearch instance. Common
