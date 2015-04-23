@@ -22,6 +22,7 @@ from pyelasticsearch import ElasticSearch
 from pyelasticsearch import bulk_chunks
 from pyelasticsearch import ElasticHttpNotFoundError
 from pyelasticsearch import IndexAlreadyExistsError
+from retrying import retry
 
 
 __version__ = '1.0.0.dev4'
@@ -29,13 +30,26 @@ thread_local = local()
 
 
 def echo(message, quiet):
-    """Print the given message to standard out via click unless quiet is True."""
+    """
+    Print the given message to standard out via click unless quiet is True.
+
+    :param message: the message to print out to the console
+    :param quiet: don't print the message when this is True
+    """
     if not quiet:
         click.echo(message)
 
 
 def documents_from_file(es, filename, delimiter, quiet):
-    """Return a generator for pulling rows from a given delimited file."""
+    """
+    Return a generator for pulling rows from a given delimited file.
+
+    :param es: an ElasticSearch client
+    :param filename: the name of the file to read from
+    :param delimiter: the delimiter to use
+    :param quiet: don't output anything to the console when this is True
+    :return: generator returning document-indexing operations
+    """
     def all_docs():
         with open(filename, 'rb') as doc_file:
             # delimited file should include the field names as the first row
@@ -55,18 +69,38 @@ def documents_from_file(es, filename, delimiter, quiet):
     return all_docs
 
 
-def local_bulk(chunk, host, doc_type, index_name):
-    if not hasattr(thread_local, 'es_host'):
-        thread_local.es_host = ElasticSearch(host)
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=10)
+def local_bulk(host, index_name, doc_type, chunk):
+    """
+    Bulk upload the given chunk, creating a thread local ElasticSearch instance
+    for the target host if one does not already exist. Retry this function at
+    least 10 times with exponential backoff.
 
-    # TODO add retry to this
-    thread_local.es_host.bulk(chunk, doc_type=doc_type, index=index_name)
+    :param host: the target Elasticsearch host
+    :param index_name: the index name
+    :param doc_type: the document type
+    :param chunk: the chunk of documents to bulk upload
+    """
+    if not hasattr(thread_local, 'es'):
+        thread_local.es = ElasticSearch(host)
+
+    thread_local.es.bulk(chunk, index=index_name, doc_type=doc_type)
 
 
 def perform_bulk_index(host, index_name, doc_type, doc_fetch, docs_per_chunk, bytes_per_chunk, parallel):
-    """Chunk up documents and send them to Elasticsearch in bulk."""
+    """
+    Chunk up documents and send them to Elasticsearch in bulk.
+
+    :param host: the target Elasticsearch host
+    :param index_name: the target index name
+    :param doc_type: the target document type
+    :param doc_fetch: a function to call to fetch documents
+    :param docs_per_chunk: the number of documents per chunk to upload
+    :param bytes_per_chunk: the max bytes per chunk to upload
+    :param parallel: the number of bulk uploads to do at the same time
+    """
     Parallel(n_jobs=parallel)(
-        delayed(local_bulk)(chunk, host, doc_type=doc_type, index_name=index_name)
+        delayed(local_bulk)(host, index_name, doc_type, chunk)
         for chunk in bulk_chunks(doc_fetch(),
                                  docs_per_chunk=docs_per_chunk,
                                  bytes_per_chunk=bytes_per_chunk))
@@ -85,6 +119,10 @@ def sanitize_delimiter(delimiter, is_tab):
     non-trivial for me to remember. I didn't want to have to ask people to
     "obviously" just pass in --delimiter $'\t' for the extremely common case of
     wanting to load a TSV file. I'm sure this could be better.
+
+    :param delimiter: the delimiter to use
+    :param is_tab: if this is True, just return a tab character
+    :return a one character delimiter
     """
 
     if is_tab:
