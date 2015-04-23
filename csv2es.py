@@ -14,15 +14,18 @@
 
 import csv
 import json
+from threading import local
 
 import click
+from joblib import Parallel, delayed
 from pyelasticsearch import ElasticSearch
 from pyelasticsearch import bulk_chunks
 from pyelasticsearch import ElasticHttpNotFoundError
 from pyelasticsearch import IndexAlreadyExistsError
 
 
-__version__ = '1.0.0.dev3'
+__version__ = '1.0.0.dev4'
+thread_local = local()
 
 
 def echo(message, quiet):
@@ -52,12 +55,21 @@ def documents_from_file(es, filename, delimiter, quiet):
     return all_docs
 
 
-def perform_bulk_index(es, index_name, doc_type, doc_fetch, docs_per_chunk, bytes_per_chunk):
+def local_bulk(chunk, host, doc_type, index_name):
+    if not hasattr(thread_local, 'es_host'):
+        thread_local.es_host = ElasticSearch(host)
+
+    # TODO add retry to this
+    thread_local.es_host.bulk(chunk, doc_type=doc_type, index=index_name)
+
+
+def perform_bulk_index(host, index_name, doc_type, doc_fetch, docs_per_chunk, bytes_per_chunk, parallel):
     """Chunk up documents and send them to Elasticsearch in bulk."""
-    for chunk in bulk_chunks(doc_fetch(),
-                             docs_per_chunk=docs_per_chunk,
-                             bytes_per_chunk=bytes_per_chunk):
-        es.bulk(chunk, doc_type=doc_type, index=index_name)
+    Parallel(n_jobs=parallel)(
+        delayed(local_bulk)(chunk, host, doc_type=doc_type, index_name=index_name)
+        for chunk in bulk_chunks(doc_fetch(),
+                                 docs_per_chunk=docs_per_chunk,
+                                 bytes_per_chunk=bytes_per_chunk))
 
 
 def sanitize_delimiter(delimiter, is_tab):
@@ -109,11 +121,13 @@ def sanitize_delimiter(delimiter, is_tab):
               help='The documents per chunk to upload to ES, defaults to 5000')
 @click.option('--bytes-per-chunk', default=100000, required=False,
               help='The bytes per chunk to upload to ES, defaults to 100000')
+@click.option('--parallel', default=1, required=False,
+              help='The number of parallel bulk uploads to send at once, defaults to 1')
 @click.option('--quiet', is_flag=True, required=False,
               help='Minimize console output')
 @click.version_option(version=__version__, )
 def cli(index_name, delete_index, mapping_file, doc_type, import_file,
-        delimiter, tab, host, docs_per_chunk, bytes_per_chunk, quiet):
+        delimiter, tab, host, docs_per_chunk, bytes_per_chunk, parallel, quiet):
     """
     Bulk import a delimited file into a target Elasticsearch instance. Common
     delimited files include things like CSV and TSV.
@@ -155,7 +169,7 @@ def cli(index_name, delete_index, mapping_file, doc_type, import_file,
 
     target_delimiter = sanitize_delimiter(delimiter, tab)
     documents = documents_from_file(es, import_file, target_delimiter, quiet)
-    perform_bulk_index(es, index_name, doc_type, documents, docs_per_chunk, bytes_per_chunk)
+    perform_bulk_index(host, index_name, doc_type, documents, docs_per_chunk, bytes_per_chunk, parallel)
 
 
 if __name__ == "__main__":
