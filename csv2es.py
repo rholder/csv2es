@@ -25,7 +25,7 @@ from pyelasticsearch import IndexAlreadyExistsError
 from retrying import retry
 
 
-__version__ = '1.0.0.dev4'
+__version__ = '1.0.0'
 thread_local = local()
 
 
@@ -140,27 +140,27 @@ def sanitize_delimiter(delimiter, is_tab):
 
 @click.command()
 @click.option('--index-name', required=True,
-              help='The name of the ES index to load data into')
-@click.option('--delete-index', is_flag=True, required=False,
-              help='Delete an existing ES index if it exists (use with caution...)')
+              help='Index name to load data into         ')
 @click.option('--doc-type', required=True,
-              help='The target document type, maybe like user_records')
+              help='The document type (like user_records)')
 @click.option('--import-file', required=True,
-              help='File with content to import')
+              help='File with content to import          ')
 @click.option('--mapping-file', required=False,
               help='JSON mapping file for index')
 @click.option('--delimiter', required=False,
               help='The field delimiter to use, defaults to CSV')
 @click.option('--tab', is_flag=True, required=False,
-              help='Assume file is tab-separated, overrides custom delimiter')
+              help='Assume tab-separated, overrides delimiter')
 @click.option('--host', default='http://127.0.0.1:9200/', required=False,
-              help='The ES host, defaults to http://127.0.0.1:9200/')
+              help='The Elasticsearch host (http://127.0.0.1:9200/)')
 @click.option('--docs-per-chunk', default=5000, required=False,
-              help='The documents per chunk to upload to ES, defaults to 5000')
+              help='The documents per chunk to upload (5000)')
 @click.option('--bytes-per-chunk', default=100000, required=False,
-              help='The bytes per chunk to upload to ES, defaults to 100000')
+              help='The bytes per chunk to upload (100000)')
 @click.option('--parallel', default=1, required=False,
-              help='The number of parallel bulk uploads to send at once, defaults to 1')
+              help='Parallel uploads to send at once, defaults to 1')
+@click.option('--delete-index', is_flag=True, required=False,
+              help='Delete existing index if it exists')
 @click.option('--quiet', is_flag=True, required=False,
               help='Minimize console output')
 @click.version_option(version=__version__, )

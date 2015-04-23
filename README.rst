@@ -16,6 +16,7 @@ the field names intended to be used for Elasticsearch documents otherwise things
 will get weird. There's a little trick documented below to add a header row in
 case the file is missing it.
 
+
 Features
 --------
 
@@ -23,6 +24,9 @@ Features
 - Load CSV's or TSV's
 - Customize the delimiter to something else
 - Uses the Elasticsearch bulk API
+- Parallel bulk uploads
+- Retry on errors with exponential backoff
+
 
 Installation
 ------------
@@ -33,8 +37,43 @@ To install csv2es, simply:
 
     $ pip install csv2es
 
+
+Usage
+-----
+::
+ Usage: csv2es [OPTIONS]
+
+   Bulk import a delimited file into a target Elasticsearch instance. Common
+   delimited files include things like CSV and TSV.
+
+   Load a CSV file:
+     csv2es --index-name potatoes --doc-type potato --import-file potatoes.csv
+
+   For a TSV file, note the tab delimiter option
+     csv2es --index-name tomatoes --doc-type tomato --import-file tomatoes.tsv --tab
+
+   For a nifty pipe-delimited file (delimiters must be one character):
+     csv2es --index-name pipes --doc-type pipe --import-file pipes.psv --delimiter '|'
+
+ Options:
+   --index-name TEXT          Index name to load data into           [required]
+   --doc-type TEXT            The document type (like user_records)  [required]
+   --import-file TEXT         File with content to import            [required]
+   --mapping-file TEXT        JSON mapping file for index
+   --delimiter TEXT           The field delimiter to use, defaults to CSV
+   --tab                      Assume tab-separated, overrides delimiter
+   --host TEXT                The Elasticsearch host (http://127.0.0.1:9200/)
+   --docs-per-chunk INTEGER   The documents per chunk to upload (5000)
+   --bytes-per-chunk INTEGER  The bytes per chunk to upload (100000)
+   --parallel INTEGER         Parallel uploads to send at once, defaults to 1
+   --delete-index             Delete existing index if it exists
+   --quiet                    Minimize console output
+   --version                  Show the version and exit.
+   --help                     Show this message and exit.
+
+
 Examples
-----------
+--------
 
 Let's say we've got a potatoes.csv file with a nice header that looks like this::
 
@@ -57,6 +96,7 @@ But what if it was tomatoes.tsv and separated by tabs? Well, we can do this:
 .. code-block:: bash
 
     csv2es --index-name tomatoes --doc-type tomato --import-file tomatoes.tsv --tab
+
 
 Advanced Examples
 -----------------

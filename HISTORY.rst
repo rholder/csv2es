@@ -3,7 +3,14 @@
 History
 -------
 
+1.0.0 (2015-04-23)
+++++++++++++++++++
+- Add retrying support with exponential backoff per chunk for bulk uploads
+- Add parallel bulk uploading via joblib
+- Stable release
+
 1.0.0.dev3 (2015-04-19)
++++++++++++++++++++++++
 - Switch over to Click for handling executable
 - Fix --delete-index flag
 - Add --version option
