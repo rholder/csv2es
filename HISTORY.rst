@@ -3,12 +3,14 @@
 History
 -------
 
-1.0.0.dev2 (2015-04-19)
-+++++++++++++++++++++++
+1.0.0.dev3 (2015-04-19)
 - Switch over to Click for handling executable
-- Fix import errors
 - Fix --delete-index flag
 - Add --version option
+
+1.0.0.dev2 (2015-04-19)
++++++++++++++++++++++++
+- Fix import errors
 
 1.0.0.dev1 (2015-04-18)
 +++++++++++++++++++++++
