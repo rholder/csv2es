@@ -5,7 +5,7 @@ csv2es
     :target: https://pypi.python.org/pypi/csv2es
 
 .. image:: https://img.shields.io/pypi/dm/csv2es.svg
-        :target: https://pypi.python.org/pypi/csv2es
+    :target: https://pypi.python.org/pypi/csv2es
 
 .. image:: https://img.shields.io/travis/rholder/csv2es.svg
     :target: https://travis-ci.org/rholder/csv2es
