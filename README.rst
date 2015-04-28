@@ -4,11 +4,11 @@ csv2es
 .. image:: https://img.shields.io/pypi/v/csv2es.svg
     :target: https://pypi.python.org/pypi/csv2es
 
-.. image:: https://img.shields.io/pypi/dm/csv2es.svg
-    :target: https://pypi.python.org/pypi/csv2es
-
 .. image:: https://img.shields.io/travis/rholder/csv2es.svg
     :target: https://travis-ci.org/rholder/csv2es
+
+.. image:: https://img.shields.io/pypi/dm/csv2es.svg
+    :target: https://pypi.python.org/pypi/csv2es
 
 The csv2es project is an Apache 2.0 licensed commandline utility, written in
 Python, to load a CSV (or TSV) file into an Elasticsearch instance. That's
