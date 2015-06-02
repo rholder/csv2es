@@ -60,7 +60,7 @@ Usage
  Options:
    --index-name TEXT          Index name to load data into           [required]
    --doc-type TEXT            The document type (like user_records)  [required]
-   --import-file TEXT         File with content to import            [required]
+   --import-file TEXT         File to import (or '-' for stdin)      [required]
    --mapping-file TEXT        JSON mapping file for index
    --delimiter TEXT           The field delimiter to use, defaults to CSV
    --tab                      Assume tab-separated, overrides delimiter
