@@ -3,6 +3,10 @@
 History
 -------
 
+1.0.1 (2015-06-02)
+++++++++++++++++++
+- Add option to stream from stdin
+
 1.0.0 (2015-04-23)
 ++++++++++++++++++
 - Add retrying support with exponential backoff per chunk for bulk uploads
