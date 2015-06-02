@@ -14,6 +14,7 @@
 
 import csv
 import json
+import sys
 from threading import local
 
 import click
@@ -45,13 +46,13 @@ def documents_from_file(es, filename, delimiter, quiet):
     Return a generator for pulling rows from a given delimited file.
 
     :param es: an ElasticSearch client
-    :param filename: the name of the file to read from
+    :param filename: the name of the file to read from or '-' if stdin
     :param delimiter: the delimiter to use
     :param quiet: don't output anything to the console when this is True
     :return: generator returning document-indexing operations
     """
     def all_docs():
-        with open(filename, 'rb') as doc_file:
+        with open(filename, 'rb') if filename != '-' else sys.stdin as doc_file:
             # delimited file should include the field names as the first row
             fieldnames = doc_file.next().strip().split(delimiter)
             echo('Using the following ' + str(len(fieldnames)) + ' fields:', quiet)
@@ -144,7 +145,7 @@ def sanitize_delimiter(delimiter, is_tab):
 @click.option('--doc-type', required=True,
               help='The document type (like user_records)')
 @click.option('--import-file', required=True,
-              help='File with content to import          ')
+              help='File to import (or \'-\' for stdin)    ')
 @click.option('--mapping-file', required=False,
               help='JSON mapping file for index')
 @click.option('--delimiter', required=False,
