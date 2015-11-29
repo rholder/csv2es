@@ -53,13 +53,12 @@ def documents_from_file(es, filename, delimiter, quiet):
     """
     def all_docs():
         with open(filename, 'rb') if filename != '-' else sys.stdin as doc_file:
-            # delimited file should include the field names as the first row
-            fieldnames = doc_file.next().strip().split(delimiter)
-            echo('Using the following ' + str(len(fieldnames)) + ' fields:', quiet)
-            for fieldname in fieldnames:
-                echo(fieldname, quiet)
 
-            reader = csv.DictReader(doc_file, delimiter=delimiter, fieldnames=fieldnames)
+            csvargs = {}
+            if delimiter:
+                csvargs["delimiter"] = delimiter
+
+            reader = csv.DictReader(doc_file, **csvargs)
             count = 0
             for row in reader:
                 count += 1
