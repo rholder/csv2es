@@ -41,7 +41,7 @@ def echo(message, quiet):
         click.echo(message)
 
 
-def documents_from_file(es, filename, delimiter, quiet):
+def documents_from_file(es, filename, quiet):
     """
     Return a generator for pulling rows from a given delimited file.
 
@@ -54,17 +54,13 @@ def documents_from_file(es, filename, delimiter, quiet):
     def all_docs():
         with open(filename, 'rb') if filename != '-' else sys.stdin as doc_file:
 
-            csvargs = {}
-            if delimiter:
-                csvargs["delimiter"] = delimiter
-
-            reader = csv.DictReader(doc_file, **csvargs)
             count = 0
-            for row in reader:
+            docs = json.load(doc_file)
+            for doc in docs:
                 count += 1
                 if count % 10000 == 0:
                     echo('Sent documents: ' + str(count), quiet)
-                yield es.index_op(row)
+                yield es.index_op(doc)
 
     return all_docs
 
@@ -106,37 +102,6 @@ def perform_bulk_index(host, index_name, doc_type, doc_fetch, docs_per_chunk, by
                                  bytes_per_chunk=bytes_per_chunk))
 
 
-def sanitize_delimiter(delimiter, is_tab):
-    """
-    Return a single character delimiter from the given (possibly unicode)
-    string. If is_tab is True, always return a single tab. If delimiter is None
-    then return None. Raise an Exception if the delimiter can't be converted to
-    a single character.
-
-    Why is this so complicated with some kind of special artisan tab handling?
-    Well, passing in a tab character as a delimiter from the commandline as
-    exactly 1 character, unescaped, and sanitized of unicode wonkery was
-    non-trivial for me to remember. I didn't want to have to ask people to
-    "obviously" just pass in --delimiter $'\t' for the extremely common case of
-    wanting to load a TSV file. I'm sure this could be better.
-
-    :param delimiter: the delimiter to use
-    :param is_tab: if this is True, just return a tab character
-    :return a one character delimiter
-    """
-
-    if is_tab:
-        return str('\t')
-
-    if delimiter is None:
-        return None
-    else:
-        d = str(delimiter)
-        if len(d) == 1:
-            return d
-        else:
-            raise Exception('Delimiter cannot be more than 1 character.')
-
 
 @click.command()
 @click.option('--index-name', required=True,
@@ -147,10 +112,6 @@ def sanitize_delimiter(delimiter, is_tab):
               help='File to import (or \'-\' for stdin)    ')
 @click.option('--mapping-file', required=False,
               help='JSON mapping file for index')
-@click.option('--delimiter', required=False,
-              help='The field delimiter to use, defaults to CSV')
-@click.option('--tab', is_flag=True, required=False,
-              help='Assume tab-separated, overrides delimiter')
 @click.option('--host', default='http://127.0.0.1:9200/', required=False,
               help='The Elasticsearch host (http://127.0.0.1:9200/)')
 @click.option('--docs-per-chunk', default=5000, required=False,
@@ -165,7 +126,7 @@ def sanitize_delimiter(delimiter, is_tab):
               help='Minimize console output')
 @click.version_option(version=__version__, )
 def cli(index_name, delete_index, mapping_file, doc_type, import_file,
-        delimiter, tab, host, docs_per_chunk, bytes_per_chunk, parallel, quiet):
+        host, docs_per_chunk, bytes_per_chunk, parallel, quiet):
     """
     Bulk import a delimited file into a target Elasticsearch instance. Common
     delimited files include things like CSV and TSV.
@@ -205,8 +166,7 @@ def cli(index_name, delete_index, mapping_file, doc_type, import_file,
             mapping = json.loads(f.read())
         es.put_mapping(index_name, doc_type, mapping)
 
-    target_delimiter = sanitize_delimiter(delimiter, tab)
-    documents = documents_from_file(es, import_file, target_delimiter, quiet)
+    documents = documents_from_file(es, import_file, quiet)
     perform_bulk_index(host, index_name, doc_type, documents, docs_per_chunk, bytes_per_chunk, parallel)
 
 
