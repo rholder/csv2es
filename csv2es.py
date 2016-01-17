@@ -26,7 +26,7 @@ from pyelasticsearch import IndexAlreadyExistsError
 from retrying import retry
 
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 thread_local = local()
 
 
@@ -111,8 +111,9 @@ def sanitize_delimiter(delimiter, is_tab):
     """
     Return a single character delimiter from the given (possibly unicode)
     string. If is_tab is True, always return a single tab. If delimiter is None
-    then return None. Raise an Exception if the delimiter can't be converted to
-    a single character.
+    previously None was returned in previous versions, but a ',' is preferred 
+    here to match the examples in the README. Raise an Exception if the 
+    delimiter can't be converted to a single character.
 
     Why is this so complicated with some kind of special artisan tab handling?
     Well, passing in a tab character as a delimiter from the commandline as
@@ -130,7 +131,8 @@ def sanitize_delimiter(delimiter, is_tab):
         return str('\t')
 
     if delimiter is None:
-        return None
+        # Modified from None to ',' in 1.0.2
+        return str(',')
     else:
         d = str(delimiter)
         if len(d) == 1:

@@ -10,3 +10,5 @@ Patches and Suggestions
 ```````````````````````
 
 - Christine Doig
+- Yaiza Rubio
+- Félix Brezo

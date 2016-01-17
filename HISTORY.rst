@@ -3,6 +3,11 @@
 History
 -------
 
+1.0.2 (2016-01-17)
+++++++++++++++++++
+- Fix when neither --delimiter nor --tab is provided. New default: ','.
+- Added *~ to .gitignore
+
 1.0.1 (2015-06-02)
 ++++++++++++++++++
 - Add option to stream from stdin
