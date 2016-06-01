@@ -10,3 +10,4 @@ Patches and Suggestions
 ```````````````````````
 
 - Christine Doig
+- Sébastien Arnaud (https://about.me/arnaudsj)

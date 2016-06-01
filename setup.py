@@ -58,7 +58,7 @@ settings.update(
     url='https://github.com/rholder/csv2es',
     classifiers=classifiers,
     keywords='elasticsearch es pyelasticsearch csv tsv bulk import kibana',
-    py_modules= ['csv2es'],
+    py_modules=['csv2es'],
     entry_points='''
         [console_scripts]
         csv2es=csv2es:cli

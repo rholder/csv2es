@@ -26,7 +26,7 @@ from pyelasticsearch import IndexAlreadyExistsError
 from retrying import retry
 
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 thread_local = local()
 
 
@@ -52,14 +52,16 @@ def documents_from_file(es, filename, delimiter, quiet):
     :return: generator returning document-indexing operations
     """
     def all_docs():
-        with open(filename, 'rb') if filename != '-' else sys.stdin as doc_file:
+        with open(filename, 'rb') if filename != '-' else sys.stdin as doc:
             # delimited file should include the field names as the first row
-            fieldnames = doc_file.next().strip().split(delimiter)
-            echo('Using the following ' + str(len(fieldnames)) + ' fields:', quiet)
+            fieldnames = doc.next().strip().split(delimiter)
+            echo('Using the following ' + str(len(fieldnames)) + ' fields:',
+                 quiet)
             for fieldname in fieldnames:
                 echo(fieldname, quiet)
 
-            reader = csv.DictReader(doc_file, delimiter=delimiter, fieldnames=fieldnames)
+            reader = csv.DictReader(doc, delimiter=delimiter,
+                                    fieldnames=fieldnames)
             count = 0
             for row in reader:
                 count += 1
@@ -70,7 +72,8 @@ def documents_from_file(es, filename, delimiter, quiet):
     return all_docs
 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=10)
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000,
+       stop_max_attempt_number=10)
 def local_bulk(host, index_name, doc_type, chunk):
     """
     Bulk upload the given chunk, creating a thread local ElasticSearch instance
@@ -88,7 +91,8 @@ def local_bulk(host, index_name, doc_type, chunk):
     thread_local.es.bulk(chunk, index=index_name, doc_type=doc_type)
 
 
-def perform_bulk_index(host, index_name, doc_type, doc_fetch, docs_per_chunk, bytes_per_chunk, parallel):
+def perform_bulk_index(host, index_name, doc_type, doc_fetch, docs_per_chunk,
+                       bytes_per_chunk, parallel):
     """
     Chunk up documents and send them to Elasticsearch in bulk.
 
@@ -148,6 +152,8 @@ def sanitize_delimiter(delimiter, is_tab):
               help='File to import (or \'-\' for stdin)    ')
 @click.option('--mapping-file', required=False,
               help='JSON mapping file for index')
+@click.option('--settings-file', required=False,
+              help='JSON settings file for index')
 @click.option('--delimiter', required=False,
               help='The field delimiter to use, defaults to CSV')
 @click.option('--tab', is_flag=True, required=False,
@@ -165,8 +171,9 @@ def sanitize_delimiter(delimiter, is_tab):
 @click.option('--quiet', is_flag=True, required=False,
               help='Minimize console output')
 @click.version_option(version=__version__, )
-def cli(index_name, delete_index, mapping_file, doc_type, import_file,
-        delimiter, tab, host, docs_per_chunk, bytes_per_chunk, parallel, quiet):
+def cli(index_name, delete_index, mapping_file, settings_file, doc_type,
+        import_file, delimiter, tab, host, docs_per_chunk, bytes_per_chunk,
+        parallel, quiet):
     """
     Bulk import a delimited file into a target Elasticsearch instance. Common
     delimited files include things like CSV and TSV.
@@ -176,10 +183,12 @@ def cli(index_name, delete_index, mapping_file, doc_type, import_file,
       csv2es --index-name potatoes --doc-type potato --import-file potatoes.csv
     \b
     For a TSV file, note the tab delimiter option
-      csv2es --index-name tomatoes --doc-type tomato --import-file tomatoes.tsv --tab
+      csv2es --index-name tomatoes --doc-type tomato \
+             --import-file tomatoes.tsv --tab
     \b
     For a nifty pipe-delimited file (delimiters must be one character):
-      csv2es --index-name pipes --doc-type pipe --import-file pipes.psv --delimiter '|'
+      csv2es --index-name pipes --doc-type pipe --import-file pipes.psv \
+             --delimiter '|'
 
     """
 
@@ -191,10 +200,17 @@ def cli(index_name, delete_index, mapping_file, doc_type, import_file,
             es.delete_index(index_name)
             echo('Deleted: ' + index_name, quiet)
         except ElasticHttpNotFoundError:
-            echo('Index ' + index_name + ' not found, nothing to delete', quiet)
+            echo('Index ' + index_name + ' not found, nothing to delete',
+                 quiet)
 
     try:
-        es.create_index(index_name)
+        if settings_file:
+            echo('Applying mapping from: ' + settings_file, quiet)
+            with open(settings_file) as f:
+                settings = json.loads(f.read())
+            es.create_index(index_name, settings)
+        else:
+            es.create_index(index_name)
         echo('Created new index: ' + index_name, quiet)
     except IndexAlreadyExistsError:
         echo('Index ' + index_name + ' already exists', quiet)
@@ -208,7 +224,8 @@ def cli(index_name, delete_index, mapping_file, doc_type, import_file,
 
     target_delimiter = sanitize_delimiter(delimiter, tab)
     documents = documents_from_file(es, import_file, target_delimiter, quiet)
-    perform_bulk_index(host, index_name, doc_type, documents, docs_per_chunk, bytes_per_chunk, parallel)
+    perform_bulk_index(host, index_name, doc_type, documents, docs_per_chunk,
+                       bytes_per_chunk, parallel)
 
 
 if __name__ == "__main__":
