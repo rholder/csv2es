@@ -3,6 +3,10 @@
 History
 -------
 
+1.0.2 (2016-05-31)
+++++++++++++++++++
+- Add option --settings to pass settings when creating new index (e.g. custom analyzers)
+
 1.0.1 (2015-06-02)
 ++++++++++++++++++
 - Add option to stream from stdin
