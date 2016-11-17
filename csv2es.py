@@ -162,11 +162,13 @@ def sanitize_delimiter(delimiter, is_tab):
               help='Parallel uploads to send at once, defaults to 1')
 @click.option('--delete-index', is_flag=True, required=False,
               help='Delete existing index if it exists')
+@click.option('--existing-index', is_flag=True, required=False,
+              help='Don\'t create index.')
 @click.option('--quiet', is_flag=True, required=False,
               help='Minimize console output')
 @click.version_option(version=__version__, )
 def cli(index_name, delete_index, mapping_file, doc_type, import_file,
-        delimiter, tab, host, docs_per_chunk, bytes_per_chunk, parallel, quiet):
+        delimiter, tab, host, docs_per_chunk, bytes_per_chunk, parallel, existing_index, quiet):
     """
     Bulk import a delimited file into a target Elasticsearch instance. Common
     delimited files include things like CSV and TSV.
@@ -193,11 +195,12 @@ def cli(index_name, delete_index, mapping_file, doc_type, import_file,
         except ElasticHttpNotFoundError:
             echo('Index ' + index_name + ' not found, nothing to delete', quiet)
 
-    try:
-        es.create_index(index_name)
-        echo('Created new index: ' + index_name, quiet)
-    except IndexAlreadyExistsError:
-        echo('Index ' + index_name + ' already exists', quiet)
+    if not existing_index:
+        try:
+            es.create_index(index_name)
+            echo('Created new index: ' + index_name, quiet)
+        except IndexAlreadyExistsError:
+            echo('Index ' + index_name + ' already exists', quiet)
 
     echo('Using document type: ' + doc_type, quiet)
     if mapping_file:
