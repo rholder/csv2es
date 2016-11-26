@@ -52,9 +52,9 @@ def documents_from_file(es, filename, delimiter, quiet):
     :return: generator returning document-indexing operations
     """
     def all_docs():
-        with open(filename, 'rb') if filename != '-' else sys.stdin as doc_file:
+        with open(filename, 'r') if filename != '-' else sys.stdin as doc_file:
             # delimited file should include the field names as the first row
-            fieldnames = doc_file.next().strip().split(delimiter)
+            fieldnames = doc_file.readline().strip().split(delimiter)
             echo('Using the following ' + str(len(fieldnames)) + ' fields:', quiet)
             for fieldname in fieldnames:
                 echo(fieldname, quiet)
