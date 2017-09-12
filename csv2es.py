@@ -44,7 +44,7 @@ def echo(message, quiet):
         click.echo(message)
 
 
-def documents_from_file(es, filename, delimiter, quiet, csv_date_field, csv_date_field_gmt_offset):
+def documents_from_file(es, filename, delimiter, quiet, csv_clean_fieldnames, csv_date_field, csv_date_field_gmt_offset):
     """
     Return a generator for pulling rows from a given delimited file.
 
@@ -66,15 +66,23 @@ def documents_from_file(es, filename, delimiter, quiet, csv_date_field, csv_date
             count = 0
             for row in reader:
 
+                # the row from DictReader needs to be cleaned
+                if csv_clean_fieldnames:
+                    cleaned_row = {}
+
+                    # strip all double quotes from keys and lower-cast
+                    for k, v in row.iteritems():
+                        cleaned_row[k.replace('"',"").lower()] = v
+
+                    row = cleaned_row
+
                 # parse csv_date_field into elasticsearch compatible epoch_millis
                 if csv_date_field:
-                    pprint(row)
                     date_val_str = row[csv_date_field]
+
                     if date_val_str:
                         date_obj = parser.parse(date_val_str.strip())
-                        if not csv_date_field_gmt_offset:
-                            csv_date_field_gmt_offset = 0
-                        row[csv_date_field] = int(calendar.timegm(date_obj) - csv_date_field_gmt_offset) * 1000
+                        row[csv_date_field] = int(calendar.timegm(date_obj.timetuple()) + (csv_date_field_gmt_offset * (3600))) * 1000
 
                 count += 1
                 if count % 10000 == 0:
@@ -178,14 +186,17 @@ def sanitize_delimiter(delimiter, is_tab):
               help='Delete existing index if it exists')
 @click.option('--quiet', is_flag=True, required=False,
               help='Minimize console output')
+@click.option('--csv-clean-fieldnames', is_flag=True, required=False,
+              help='Strips double quotes and lower-cases all CSV header names for proper ElasticSearch fieldnames')
 @click.option('--csv-date-field', required=False,
               help='The CSV header name that represents a date string to parsed (via python-dateutil) into an ElasticSearch epoch_millis')
-@click.option('--csv-date-field-gmt-offset', required=False,
+@click.option('--csv-date-field-gmt-offset', required=False, type=int,
               help='The GMT offset for the csv-date-field (i.e. +/- N hours)')
 @click.version_option(version=__version__, )
 def cli(index_name, delete_index, mapping_file, doc_type, import_file,
         delimiter, tab, host, docs_per_chunk, bytes_per_chunk, parallel, quiet,
-        csv_date_field, csv_date_field_gmt_offset):
+        csv_clean_fieldnames,csv_date_field, csv_date_field_gmt_offset):
+
     """
     Bulk import a delimited file into a target Elasticsearch instance. Common
     delimited files include things like CSV and TSV.
@@ -226,7 +237,7 @@ def cli(index_name, delete_index, mapping_file, doc_type, import_file,
         es.put_mapping(index_name, doc_type, mapping)
 
     target_delimiter = sanitize_delimiter(delimiter, tab)
-    documents = documents_from_file(es, import_file, target_delimiter, quiet, csv_date_field, csv_date_field_gmt_offset)
+    documents = documents_from_file(es, import_file, target_delimiter, quiet, csv_clean_fieldnames, csv_date_field, csv_date_field_gmt_offset)
     perform_bulk_index(host, index_name, doc_type, documents, docs_per_chunk, bytes_per_chunk, parallel)
 
 
