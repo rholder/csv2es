@@ -16,7 +16,6 @@ import csv
 import json
 import sys
 import calendar
-from pprint import pprint
 
 from threading import local
 
