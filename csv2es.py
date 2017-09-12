@@ -83,12 +83,9 @@ def documents_from_file(es, filename, delimiter, quiet, csv_clean_fieldnames, cs
 
                     if date_val_str:
                         date_obj = parser.parse(date_val_str.strip())
-                        pprint(date_obj)
                         corrected_offset = (csv_date_field_gmt_offset * -1)
                         date_obj = date_obj + timedelta(hours=corrected_offset)
-                        pprint(date_obj)
                         row[csv_date_field] = int(calendar.timegm(date_obj.timetuple())) * 1000
-                        pprint(row)
 
                 count += 1
                 if count % 10000 == 0:
