@@ -66,11 +66,11 @@ def documents_from_file(es, filename, delimiter, quiet, csv_date_field, csv_date
             for row in reader:
 
                 # parse csv_date_field into elasticsearch compatible epoch_millis
-                if csv_date_field
+                if csv_date_field:
                     date_val_str = row[csv_date_field]
-                    if date_val_str
+                    if date_val_str:
                         date_obj = parser.parse(date_val_str.strip())
-                        if not csv_date_field_gmt_offset
+                        if not csv_date_field_gmt_offset:
                             csv_date_field_gmt_offset = 0
                         row[csv_date_field] = int(calendar.timegm(date_obj) - csv_date_field_gmt_offset) * 1000
 
