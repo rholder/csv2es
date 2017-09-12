@@ -54,9 +54,9 @@ def documents_from_file(es, filename, delimiter, quiet, csv_clean_fieldnames, cs
     :return: generator returning document-indexing operations
     """
     def all_docs():
-        with open(filename, 'rb') if filename != '-' else sys.stdin as doc_file:
+        with open(filename, 'r') if filename != '-' else sys.stdin as doc_file:
             # delimited file should include the field names as the first row
-            fieldnames = doc_file.next().strip().split(delimiter)
+            fieldnames = doc_file.readline().strip().split(delimiter)
             echo('Using the following ' + str(len(fieldnames)) + ' fields:', quiet)
             for fieldname in fieldnames:
                 echo(fieldname, quiet)
@@ -183,6 +183,8 @@ def sanitize_delimiter(delimiter, is_tab):
               help='Parallel uploads to send at once, defaults to 1')
 @click.option('--delete-index', is_flag=True, required=False,
               help='Delete existing index if it exists')
+@click.option('--existing-index', is_flag=True, required=False,
+              help='Don\'t create index.')
 @click.option('--quiet', is_flag=True, required=False,
               help='Minimize console output')
 @click.option('--csv-clean-fieldnames', is_flag=True, required=False,
@@ -193,7 +195,7 @@ def sanitize_delimiter(delimiter, is_tab):
               help='The GMT offset for the csv-date-field (i.e. +/- N hours)')
 @click.version_option(version=__version__, )
 def cli(index_name, delete_index, mapping_file, doc_type, import_file,
-        delimiter, tab, host, docs_per_chunk, bytes_per_chunk, parallel, quiet,
+        delimiter, tab, host, docs_per_chunk, bytes_per_chunk, parallel, existing_index, quiet,
         csv_clean_fieldnames,csv_date_field, csv_date_field_gmt_offset):
 
     """
@@ -222,11 +224,12 @@ def cli(index_name, delete_index, mapping_file, doc_type, import_file,
         except ElasticHttpNotFoundError:
             echo('Index ' + index_name + ' not found, nothing to delete', quiet)
 
-    try:
-        es.create_index(index_name)
-        echo('Created new index: ' + index_name, quiet)
-    except IndexAlreadyExistsError:
-        echo('Index ' + index_name + ' already exists', quiet)
+    if not existing_index:
+        try:
+            es.create_index(index_name)
+            echo('Created new index: ' + index_name, quiet)
+        except IndexAlreadyExistsError:
+            echo('Index ' + index_name + ' already exists', quiet)
 
     echo('Using document type: ' + doc_type, quiet)
     if mapping_file:
