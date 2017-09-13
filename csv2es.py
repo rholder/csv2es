@@ -45,7 +45,7 @@ def echo(message, quiet):
         click.echo(message)
 
 
-def documents_from_file(es, filename, delimiter, quiet, csv_clean_fieldnames, csv_date_field, csv_date_field_gmt_offset):
+def documents_from_file(es, filename, delimiter, quiet, csv_clean_fieldnames, csv_date_field, csv_date_field_gmt_offset, tags):
     """
     Return a generator for pulling rows from a given delimited file.
 
@@ -76,6 +76,13 @@ def documents_from_file(es, filename, delimiter, quiet, csv_clean_fieldnames, cs
                         cleaned_row[k.replace('"',"").lower()] = v
 
                     row = cleaned_row
+
+                # tags?
+                if tags:
+                    kv_pairs = tags.split(",")
+                    for kv_pair in kv_pairs:
+                        kv = kv_pair.split("=")
+                        row[kv[0]] = kv[1]
 
                 # parse csv_date_field into elasticsearch compatible epoch_millis
                 if csv_date_field:
@@ -197,10 +204,12 @@ def sanitize_delimiter(delimiter, is_tab):
               help='The CSV header name that represents a date string to parsed (via python-dateutil) into an ElasticSearch epoch_millis')
 @click.option('--csv-date-field-gmt-offset', required=False, type=int,
               help='The GMT offset for the csv-date-field (i.e. +/- N hours)')
+@click.option('--tags', required=False,
+            help='Custom static key1=val1,key2=val2 pairs to tag all entries with')
 @click.version_option(version=__version__, )
 def cli(index_name, delete_index, mapping_file, doc_type, import_file,
         delimiter, tab, host, docs_per_chunk, bytes_per_chunk, parallel, existing_index, quiet,
-        csv_clean_fieldnames,csv_date_field, csv_date_field_gmt_offset):
+        csv_clean_fieldnames,csv_date_field, csv_date_field_gmt_offset, tags):
 
     """
     Bulk import a delimited file into a target Elasticsearch instance. Common
@@ -243,7 +252,7 @@ def cli(index_name, delete_index, mapping_file, doc_type, import_file,
         es.put_mapping(index_name, doc_type, mapping)
 
     target_delimiter = sanitize_delimiter(delimiter, tab)
-    documents = documents_from_file(es, import_file, target_delimiter, quiet, csv_clean_fieldnames, csv_date_field, csv_date_field_gmt_offset)
+    documents = documents_from_file(es, import_file, target_delimiter, quiet, csv_clean_fieldnames, csv_date_field, csv_date_field_gmt_offset, tags)
     perform_bulk_index(host, index_name, doc_type, documents, docs_per_chunk, bytes_per_chunk, parallel)
 
 
