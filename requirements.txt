@@ -5,4 +5,4 @@ pyelasticsearch==1.2.3
 retrying==1.3.3
 simplejson==3.6.5
 six==1.9.0
-urllib3==1.10.2
+urllib3==1.24.2
