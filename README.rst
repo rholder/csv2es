@@ -1,6 +1,10 @@
 csv2es
 =========================
 
+--------
+IMPORTANT: This is a FORK of the original project. See this link for issues this fork addresses: https://github.com/rholder/csv2es/pulls/bitsofinfo
+--------
+
 .. image:: https://img.shields.io/pypi/v/csv2es.svg
     :target: https://pypi.python.org/pypi/csv2es
 

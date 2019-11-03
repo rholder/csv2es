@@ -12,5 +12,6 @@ python:
 
 install:
   - pip install .
+  - pip install python-dateutil
 
 script: python setup.py test
