@@ -1,6 +1,6 @@
 click==4.0
 elasticsearch==1.4.0
-joblib==0.8.4
+joblib==1.2.0
 pyelasticsearch==1.2.3
 retrying==1.3.3
 simplejson==3.6.5
